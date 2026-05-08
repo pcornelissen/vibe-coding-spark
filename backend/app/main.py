@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import chat, documents, projects, workflows
+from app.routers import chat, consolidation, documents, projects, workflows
 
 app = FastAPI(title="Spark Docs API")
 
@@ -16,6 +16,7 @@ app.include_router(projects.router)
 app.include_router(documents.router)
 app.include_router(chat.router)
 app.include_router(workflows.router)
+app.include_router(consolidation.router)
 
 
 @app.get("/api/health")
