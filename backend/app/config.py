@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    database_url: str = "postgresql+asyncpg://postgres:postgres@127.0.0.1:15433/sparkdocs"
+    database_url: str = "postgresql+asyncpg://postgres:Ayh2GXsFqMCLL5GazLJAe_LIZiWQbvqsiS6QgTf7_Fw@127.0.0.1:15433/sparkdocs"
     test_database_url: str = "sqlite+aiosqlite:///./test.db"
     spark_dms_url: str = "http://127.0.0.1:8002"
     spark_temporal_cli: str = "docker exec spark-workflow-temporal-admin-tools-1 temporal"

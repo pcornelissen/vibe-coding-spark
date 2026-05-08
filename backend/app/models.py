@@ -40,7 +40,7 @@ class ResultType(str, enum.Enum):
 
 
 def _utcnow():
-    return datetime.now(timezone.utc)
+    return datetime.utcnow()
 
 
 def _new_uuid():
