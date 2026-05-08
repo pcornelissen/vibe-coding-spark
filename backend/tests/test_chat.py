@@ -1,3 +1,5 @@
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
@@ -31,12 +33,31 @@ async def client(db_session):
     app.dependency_overrides.clear()
 
 
+async def _fake_stream(user_message, system_prompt):
+    for token in ["Hallo", " Welt"]:
+        yield token
+
+
 @pytest.mark.asyncio
 async def test_chat_returns_sse(client):
     project = (await client.post("/api/projects", json={"name": "Chat-Test"})).json()
     project_id = project["id"]
 
-    resp = await client.get(f"/api/projects/{project_id}/chat?question=Hallo")
+    with (
+        patch("app.routers.chat.LLMClient") as MockLLM,
+        patch("app.routers.chat.QdrantClient") as MockQdrant,
+    ):
+        mock_llm = MagicMock()
+        mock_llm.get_embeddings = AsyncMock(return_value=[[0.1] * 4])
+        mock_llm.stream_chat = _fake_stream
+        MockLLM.return_value = mock_llm
+
+        mock_qdrant = MagicMock()
+        mock_qdrant.search = AsyncMock(return_value=[])
+        MockQdrant.return_value = mock_qdrant
+
+        resp = await client.get(f"/api/projects/{project_id}/chat?question=Hallo")
+
     assert resp.status_code == 200
     assert "text/event-stream" in resp.headers["content-type"]
     assert "data:" in resp.text
