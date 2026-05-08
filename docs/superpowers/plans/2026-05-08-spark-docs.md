@@ -8,6 +8,33 @@
 
 **Tech Stack:** Python 3.13, FastAPI, SQLAlchemy, Alembic, httpx, sse-starlette — Vue 3, TypeScript, Vite, PrimeVue, Pinia, Vue Router
 
+## Status (Stand: 2026-05-08 16:20)
+
+| Task | Beschreibung | Status |
+|------|-------------|--------|
+| 1 | Monorepo + Backend-Setup | ✅ Done |
+| 2 | DB-Modelle + Alembic | ✅ Done |
+| 3 | Pydantic Schemas + Projekt-CRUD | ✅ Done |
+| 4 | Vue 3 Frontend-Setup | ✅ Done |
+| 5 | TypeScript Types + API Client | ✅ Done |
+| 6 | Pinia Store | ✅ Done |
+| 7 | [A] Document Upload Endpoint | ✅ Done |
+| 8 | [A] ProjectList View | ✅ Done |
+| 9 | [B] Chat SSE Endpoint (Dummy) | ✅ Done |
+| 10 | [B] Chat UI View | ✅ Done |
+| 11 | [A] SPARK Client Service | ✅ Done |
+| 12 | [A] Process Endpoint | ✅ Done |
+| 13 | [A] ProjectDetail View | ✅ Done |
+| 14 | [B] Qdrant + LiteLLM Clients | ✅ Done |
+| 15 | [B] Chat → echte Qdrant/LLM | ✅ Done |
+| 16 | [B] Consolidation Endpoint | ✅ Done |
+| 17 | [B] Consolidation UI | ✅ Done |
+| 18 | [A] Workflow Status SSE | ✅ Done |
+| 19 | Navigation + Layout Polish | ✅ Done |
+| 20 | DB-Migration + E2E-Test | ⏳ Offen — braucht laufendes SPARK/Postgres |
+
+**Nächster Schritt:** Task 20 — PostgreSQL-DB anlegen, Alembic-Migration laufen lassen, End-to-End testen.
+
 ---
 
 ## Phase 0 — Gemeinsame Basis (zusammen)
