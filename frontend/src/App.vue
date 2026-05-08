@@ -1,11 +1,20 @@
 <script setup lang="ts">
-import { RouterView } from "vue-router";
+import Button from "primevue/button";
+import { RouterView, useRouter } from "vue-router";
+
+const router = useRouter();
 </script>
 
 <template>
   <div class="layout">
     <header class="layout-header">
-      <h1>Spark Docs</h1>
+      <Button
+        text
+        style="color: var(--p-primary-contrast-color); font-size: 1.25rem; font-weight: bold"
+        @click="router.push('/')"
+      >
+        Spark Docs
+      </Button>
     </header>
     <main class="layout-main">
       <RouterView />
@@ -28,14 +37,10 @@ body {
 }
 
 .layout-header {
-  padding: 1rem 2rem;
+  padding: 0.5rem 2rem;
   background: var(--p-primary-color);
-  color: var(--p-primary-contrast-color);
-}
-
-.layout-header h1 {
-  margin: 0;
-  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
 }
 
 .layout-main {
