@@ -35,3 +35,20 @@ Monorepo-Struktur mit Backend-Setup erstellt: `.gitignore` mit Python/Node-Patte
 
 **Lernerkenntnis:**
 Sehr detaillierte Task-Specs sparen Abstimmungsaufwand komplett. Nächstes Mal: Mehrere unabhängige Dateien parallel schreiben statt sequenziell = schneller. Test sofort nach Installation bestätigt, dass Setup funktioniert.
+
+### 11:30 – Datenbankmodelle und Alembic-Migrationen (Task 2)
+
+**Was wurde gemacht:**
+`database.py` mit async SQLAlchemy Session-Factory erstellt, `models.py` mit vier Tabellen (Project, Document, SparkWorkflow, ConsolidationResult) inkl. Enums und Relationen. Alembic initialisiert, `alembic.ini` angepasst (leere sqlalchemy.url), `alembic/env.py` mit async-zu-sync URL-Konvertierung und direktem Import aus `app.models`. Zusätzlich `psycopg2-binary` als Dev-Dependency installiert für Alembic-Sync-Verbindungen.
+
+**Ergebnis:**
+✅ Alle Dateien korrekt erstellt. Alembic-Initialisierung erfolgreich. Autogenerate-Migration schlägt erwartungsgemäß fehl (PostgreSQL auf Port 15433 nicht erreichbar). Code ist korrekt und bereit für spätere DB-Verbindung. Git-Commit erfolgreich.
+
+**KI-Interaktion:**
+- 1 Durchlauf: Task war vollständig spezifiziert
+- KI hat psycopg2-Fehler korrekt diagnostiziert und `psycopg2-binary` installiert
+- DB-Verbindungsfehler klar identifiziert als erwartetes Verhalten (kein SPARK-Postgres aktiv)
+- Sequenzielles Erstellen der Dateien, dann Alembic-Init, dann Migration-Versuch
+
+**Lernerkenntnis:**
+Bei Alembic immer `psycopg2-binary` explizit als Dependency aufnehmen, auch wenn asyncpg für Runtime genutzt wird – Alembic braucht synchronen Treiber für Autogenerate. Die klare Trennung async (Runtime) vs sync (Migrations) im env.py-Design ist ein bewährtes Pattern.
