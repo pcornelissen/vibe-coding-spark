@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.13, FastAPI, SQLAlchemy, Alembic, httpx, sse-starlette — Vue 3, TypeScript, Vite, PrimeVue, Pinia, Vue Router
 
-## Status (Stand: 2026-05-08 16:20)
+## Status (Stand: 2026-05-08 16:42)
 
 | Task | Beschreibung | Status |
 |------|-------------|--------|
@@ -31,9 +31,9 @@
 | 17 | [B] Consolidation UI | ✅ Done |
 | 18 | [A] Workflow Status SSE | ✅ Done |
 | 19 | Navigation + Layout Polish | ✅ Done |
-| 20 | DB-Migration + E2E-Test | ⏳ Offen — braucht laufendes SPARK/Postgres |
+| 20 | DB-Migration + E2E-Test | ✅ Done |
 
-**Nächster Schritt:** Task 20 — PostgreSQL-DB anlegen, Alembic-Migration laufen lassen, End-to-End testen.
+**Alle 20 Tasks abgeschlossen.** E2E-Test erfolgreich: Projekt erstellen, Dokument hochladen, Chat mit echtem LLM-Streaming (Ollama/llama3 via LiteLLM).
 
 ---
 

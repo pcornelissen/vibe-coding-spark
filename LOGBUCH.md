@@ -137,3 +137,21 @@ README.md mit Fachlichkeit, Architektur, Setup-Anleitung und Umgebungsvariablen 
 
 **Lernerkenntnis:**
 Die KI führt Metadaten (Plan-Status, Logbuch, README) nicht proaktiv mit. Man muss explizit daran erinnern. Für Handoffs zwischen Personen oder Sessions ist ein aktueller Plan-Status essentiell — das sollte nach jeder Phase automatisch passieren. Uhrzeiten nie raten, sondern aus Git-Log ableiten.
+
+### 16:42 – Task 20: DB-Migration + E2E-Test
+
+**Was wurde gemacht:**
+SPARK lokal in `spark-workflow/` geklont und Docker-Services gestartet (ohne docling-serve wegen fehlendem ARM64-Image). PostgreSQL-Passwort aus `.env` ausgelesen und in `config.py` korrigiert. Alembic-Migration generiert und angewendet. Timezone-Bug in `models.py` gefixt (`datetime.utcnow()` statt `datetime.now(timezone.utc)`). End-to-End-Test durchgeführt: Projekt erstellen, Dokument hochladen, Chat mit echtem LLM-Streaming (Ollama/llama3 via LiteLLM). Frontend in Preview verifiziert.
+
+**Ergebnis:**
+✅ Alle 20 Tasks abgeschlossen. E2E-Test erfolgreich — Backend und Frontend funktionieren mit echten Services. Drei Bugfixes waren nötig (DB-Passwort, Timezone, docling-ARM64), alle vor Ort gelöst.
+
+**KI-Interaktion:**
+- SPARK-Setup hat am längsten gedauert: Die KI musste das bestehende Repo mit lokalen Patches klonen, Services selektiv starten, Fehler diagnostizieren
+- Passwort-Problem wurde selbstständig gelöst (`.env` durchsucht)
+- Timezone-Bug wurde erst bei echtem DB-Zugriff sichtbar — KI hat die Ursache korrekt diagnostiziert und gefixt
+- docling-ARM64-Problem korrekt als "nicht blockierend" eingeordnet (Tika als Fallback)
+- Kontext-Kompression wurde nötig — Session war zu lang geworden, Zusammenfassung musste den Zustand korrekt transportieren
+
+**Lernerkenntnis:**
+E2E-Tests mit echten externen Services decken Fehler auf, die Unit-Tests mit Mocks nie finden (Passwort, Timezone-Kompatibilität). Die KI kann solche Infrastruktur-Probleme gut selbstständig diagnostizieren, wenn man ihr Zugang zu den Konfigurationsdateien gibt. Allerdings: Lange Sessions führen zu Kontext-Kompression — bei komplexen Projekten sollte man regelmäßig neue Sessions starten und den Stand über Plan-Status und Logbuch transportieren.
