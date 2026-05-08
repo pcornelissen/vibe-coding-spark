@@ -155,3 +155,13 @@ SPARK lokal in `spark-workflow/` geklont und Docker-Services gestartet (ohne doc
 
 **Lernerkenntnis:**
 E2E-Tests mit echten externen Services decken Fehler auf, die Unit-Tests mit Mocks nie finden (Passwort, Timezone-Kompatibilität). Die KI kann solche Infrastruktur-Probleme gut selbstständig diagnostizieren, wenn man ihr Zugang zu den Konfigurationsdateien gibt. Allerdings: Lange Sessions führen zu Kontext-Kompression — bei komplexen Projekten sollte man regelmäßig neue Sessions starten und den Stand über Plan-Status und Logbuch transportieren.
+
+---
+
+## Zusammenfassung Tag 1
+
+In knapp 3 Stunden wurde eine vollständige Webanwendung mit 20 Tasks in 5 Phasen umgesetzt: FastAPI-Backend mit 5 Routern und 9 Tests, Vue 3-Frontend mit 4 Views, Anbindung an SPARK (DMS + Temporal), Qdrant-Vektorsuche und LLM-Streaming via LiteLLM. Der E2E-Test mit echten Services war erfolgreich.
+
+Die KI war besonders stark bei klar spezifizierten, isolierten Tasks — Phase 0 und 1 liefen fast fehlerfrei durch. Subagenten funktionierten gut für unabhängige Tasks mit klaren Specs, stießen aber an Grenzen bei restriktiven Berechtigungssystemen (Phase 2). Direkte Bearbeitung war in solchen Fällen deutlich schneller (Phase 3: 4 Tasks in 7 Min vs. Phase 2: 5 Tasks in ~20 Min mit Nacharbeit).
+
+Die wichtigsten Lernerkenntnisse für die Zusammenarbeit mit KI-Agents: (1) Kontext früh und vollständig geben — Erfahrungsdokumente, Referenzprojekte, Constraints wie "zwei Personen arbeiten parallel" direkt am Anfang nennen. (2) Metadaten (Plan-Status, Logbuch, README) werden nicht proaktiv mitgeführt — explizite Erinnerungen sind nötig. (3) Uhrzeiten und Fakten nie raten lassen, sondern auf Quellen verweisen (Git-Log). (4) Bei Subagenten zwischen Tasks auf User-Nachrichten reagieren. (5) Mock-Tests für async HTTP-Clients sind fehleranfällig — die korrekte Mock-Hierarchie sollte in der Task-Spec erklärt werden, statt sie der KI zu überlassen.
