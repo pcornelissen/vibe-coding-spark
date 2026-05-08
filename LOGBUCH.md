@@ -18,3 +18,20 @@ Design-Spec und Implementierungsplan stehen. 20 Tasks in 5 Phasen mit 4 Sync-Pun
 
 **Lernerkenntnis:**
 Den Kontext früh und vollständig geben (Erfahrungsdokument, vorheriges Projekt) spart viele Rückfragen. Wichtige Constraints (zwei Personen, paralleles Arbeiten) direkt am Anfang nennen, nicht erst wenn das Design schon steht.
+
+### 11:15 – Backend Monorepo Setup (Task 1)
+
+**Was wurde gemacht:**
+Monorepo-Struktur mit Backend-Setup erstellt: `.gitignore` mit Python/Node-Patterns, `backend/pyproject.toml` mit FastAPI + SQLAlchemy + Pydantic + Testing-Dependencies (uv-PEP 723), `backend/app/` mit FastAPI-App und Config-Klasse (Pydantic Settings), `backend/tests/` mit conftest für AsyncClient-Fixture und Health-Check-Test.
+
+**Ergebnis:**
+✅ Alle 9 Dateien erstellt. `uv sync` erfolgreich (33 Packages installiert). Test `test_health` besteht (PASSED). Git-Commit erfolgreich.
+
+**KI-Interaktion:**
+- 1 Durchlauf: Task war präzise spezifiziert (exakte Dateipfade, exakte Code-Snippets)
+- Keine Rückfragen, keine Anpassungen nötig
+- Struktur war klar: Dateien schreiben → uv sync → Test laufen → Commit
+- KI hat paralleles Erstellen (Write-Parallelisierung) nicht genutzt, sondern sequenziell erstellt (technisch unnötig, aber funktional okay)
+
+**Lernerkenntnis:**
+Sehr detaillierte Task-Specs sparen Abstimmungsaufwand komplett. Nächstes Mal: Mehrere unabhängige Dateien parallel schreiben statt sequenziell = schneller. Test sofort nach Installation bestätigt, dass Setup funktioniert.
