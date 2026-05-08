@@ -107,3 +107,15 @@ Alle mit Prefix `SPARK_DOCS_` konfigurierbar:
 | `LITELLM_MODEL` | `gpt-oss-120b` | LLM-Modell |
 | `QDRANT_URL` | `http://127.0.0.1:6333` | Qdrant Vektordatenbank |
 | `QDRANT_COLLECTION` | `data_ollama` | Qdrant Collection |
+
+## TODO
+- UI testen
+- Testdaten generieren
+- Tests generieren
+- Arc42-Dokumentation
+- UI optimieren
+- UI schöner machen
+- Schauen, welches LLM-Modell wir wo nehmen können
+- lokales Setup streamlinen für Devs in restriktiven Umgebungen
+- wenn zentraleres Deployment möglich und gewünscht, User Auth?
+- Verheiraten mit Dietmars Wunsch nach Arc-Tool?
