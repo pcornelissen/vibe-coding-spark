@@ -1,0 +1,40 @@
+Onboarding Guide - DataHub Team
+
+Willkommen im DataHub-Team! Dieses Dokument hilft dir, dich schnell zurechtzufinden.
+
+== Tag 1: Zugang einrichten ==
+
+1. Jira-Board "DataHub" freischalten lassen (Team-Lead fragen)
+2. Slack-Channels joinen: #datahub-dev, #datahub-incidents, #datahub-releases
+3. VPN-Zugang beantragen (IT-Ticket im Self-Service-Portal)
+4. Keycloak-Account anlegen lassen (Admin: Max Mustermann)
+
+== Tag 2-3: Entwicklungsumgebung ==
+
+Repo klonen: git clone git@gitlab.internal:platform/datahub.git
+Python 3.12+ und Poetry installieren
+Docker Compose für lokale Services: docker compose up -d
+Datenbank-Seed: make seed-db
+
+Achtung: Die lokale Umgebung benötigt mindestens 16 GB RAM wegen Kafka + Spark.
+
+== Erste Woche: Einarbeitung ==
+
+- Code-Walkthrough mit einem Senior Developer (Termin über Team-Lead)
+- Architektur-Dokumentation lesen (Confluence: "DataHub Architecture")
+- Erstes Ticket bearbeiten (Label "good-first-issue" im Jira-Board)
+- Pair Programming mit dem Buddy (wird am ersten Tag zugeteilt)
+
+== Wichtige Kontakte ==
+
+Platform Lead: Anna Schmidt (anna.schmidt@example.com)
+Data Engineering Lead: Bernd Weber (bernd.weber@example.com)
+DevOps: Chris Meier (chris.meier@example.com)
+Security: Dana Fischer (dana.fischer@example.com)
+
+== Hinweise ==
+
+- Code Reviews sind Pflicht, mind. 1 Approval vor Merge
+- Feature Branches: feature/DHUB-<ticket-nr>-<kurzbeschreibung>
+- Deployment nur über CI/CD Pipeline (kein manuelles Deployment)
+- Dokumentation wird im gleichen Repo gepflegt (docs/ Ordner)
