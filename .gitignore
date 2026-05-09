@@ -8,4 +8,5 @@ dist/
 .env
 *.db
 /.idea/
+backend/uploads/
 /spark-workflow/

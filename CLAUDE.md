@@ -77,16 +77,26 @@ frontend/         — Vue 3 SPA
 ### Befehle
 
 ```bash
+# SPARK-Stack (Podman)
+cd spark-workflow && podman compose up -d
+cd spark-workflow && podman compose -f docker-compose.yaml -f docker-compose.services.yaml up -d --build dms-upload litellm-proxy extraction tika unoserver
+
+# Datenbank
+podman exec spark-workflow-postgresql-1 psql -U postgres -c "CREATE DATABASE sparkdocs;"
+
 # Backend
 cd backend && uv sync                              # Dependencies installieren
-cd backend && uv run pytest -v                      # Tests ausführen
-cd backend && uv run uvicorn app.main:app --reload  # Dev-Server starten (Port 8000)
 cd backend && uv run alembic upgrade head            # Migrationen ausführen
+cd backend && uv run uvicorn app.main:app --reload  # Dev-Server starten (Port 8000)
+cd backend && uv run pytest -v                      # Tests ausführen
 
 # Frontend
 cd frontend && npm install                          # Dependencies installieren
 cd frontend && npm run dev                          # Dev-Server starten (Port 5173)
 cd frontend && npm run type-check                   # TypeScript prüfen
+
+# Testdaten (optional)
+cd backend && uv run python seed_data/seed.py
 ```
 
 ### Arbeitsmodell
@@ -97,7 +107,11 @@ Zwei Personen arbeiten parallel an Feature-Branches mit regelmäßigen Sync-Punk
 
 Die SPARK-API-Kommunikation folgt dem Muster aus dem vorherigen `sparky-workspace`:
 1. DMS Upload: `generate-upload-url` → `PUT` auf Upload-URL → `confirm-upload`
-2. Temporal Workflow: Start via `docker exec` CLI mit `IsolatedFVPWorkflow`
-3. Workflow-ID-Format: `sparky-{project_id}`
+2. Text/Markdown-Dateien werden zu PDF konvertiert (SPARK erwartet PDF/DOCX)
+3. Temporal Workflow: Start via `docker exec` CLI mit `IsolatedFVPWorkflow`
+4. Workflow-ID-Format: `sparky-{uuid}` (neue UUID pro Verarbeitung, nicht die DB-Projekt-ID)
+5. Extraction: Tika statt Docling (kein ARM64-Image für docling-serve)
+
+Dokumente werden lokal unter `backend/uploads/{project_id}/{doc_id}` gespeichert.
 
 Referenz für lokale SPARK-Konfiguration: `spark-erfahrungen-und-loesungsansaetze.md`

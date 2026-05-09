@@ -158,6 +158,44 @@ E2E-Tests mit echten externen Services decken Fehler auf, die Unit-Tests mit Moc
 
 ---
 
+## Tag 2 – 2026-05-09
+
+### 12:00 – Testdaten generieren und UI testen
+
+**Was wurde gemacht:**
+SPARK-Infrastruktur hochgefahren (Podman Compose), sparkdocs-Datenbank angelegt, Alembic-Migration ausgeführt. Seed-Script mit 5 Beispiel-Dokumenten (DataHub-Plattform-Doku: Architektur, Betrieb, API, Sicherheit, Onboarding) erstellt. 3 Testprojekte über die API angelegt (voll/leer/minimal). Anschließend UI-Test aller Views: Projektliste, Projektdetail, Chat, Konsolidierung, leeres Projekt, "Neues Projekt"-Dialog.
+
+**Ergebnis:**
+Alle Views funktionieren korrekt, keine Konsolenfehler. Seed-Script committed und gepusht.
+
+**KI-Interaktion:**
+- Mehrere Portbelegungskonflikte beim Stack-Start (Qdrant, MinIO von anderem Tool belegt) — KI hat das schrittweise gelöst
+- Health-Endpoint-Pfad war falsch im Seed-Script (`/health` statt `/api/health`) — 1 Fix nötig
+- UI-Test über Preview-Tools funktionierte reibungslos
+- Insgesamt ~3 Prompts für den gesamten Ablauf
+
+**Lernerkenntnis:**
+Infrastruktur-Setup mit Podman braucht Aufmerksamkeit bei Portkonflikten — wenn andere Container auf denselben Ports laufen, muss man die erst aufräumen. Die KI hat das gut diagnostiziert, aber etwas umständlich gelöst (mehrere Versuche mit --scale). Besser: Erst `podman ps` prüfen und Konflikte klären, bevor man den Stack startet.
+
+### 12:30 – SPARK-Anbindung reparieren
+
+**Was wurde gemacht:**
+Festgestellt, dass DMS und LiteLLM nicht im Basis-Compose laufen, sondern in `docker-compose.services.yaml`. Services (DMS, LiteLLM, Tika, Unoserver, Extraction) gebaut und gestartet. `EXTRACTION_PROVIDER` von `docling` auf `tika` umgestellt (kein ARM64-Image für docling). Drei Bugs im Verarbeitungs-Workflow gefixt: (1) Dokument-Content wurde nicht gespeichert beim Upload, (2) `b"placeholder"` statt echtem Inhalt an DMS geschickt, (3) Text/Markdown-Dateien nicht zu PDF konvertiert. Lokale Dateispeicherung eingebaut, `text_to_pdf_bytes` aus sparky-workspace übernommen, neue UUID für SPARK-Projekt-ID.
+
+**Ergebnis:**
+Verarbeitung läuft end-to-end: Upload → DMS → Temporal-Workflow. Alle 5 Dokumente im Status "processing", Workflow-ID wird in der UI angezeigt.
+
+**KI-Interaktion:**
+- KI hat das sparky-workspace als Referenz analysiert und die Unterschiede korrekt identifiziert
+- Die drei Bugs (kein File-Storage, Placeholder-Content, fehlende PDF-Konvertierung) wurden in einem Durchgang gefixt
+- Seed-Daten mussten nach dem Fix neu angelegt werden (DB reset + re-seed)
+- ~5 Prompts für Diagnose + Fix + Test
+
+**Lernerkenntnis:**
+Referenzprojekte (sparky-workspace) sind Gold wert — die KI konnte den funktionierenden Code analysieren und die Lücken im neuen Projekt exakt identifizieren. Ohne die Referenz hätte die Fehlersuche deutlich länger gedauert. Wichtig: Bei "Verarbeitung starten"-Features immer den vollen Pfad testen (echter Content, nicht Placeholder), sonst fallen die Bugs erst in Produktion auf.
+
+---
+
 ## Zusammenfassung Tag 1
 
 In knapp 3 Stunden wurde eine vollständige Webanwendung mit 20 Tasks in 5 Phasen umgesetzt: FastAPI-Backend mit 5 Routern und 9 Tests, Vue 3-Frontend mit 4 Views, Anbindung an SPARK (DMS + Temporal), Qdrant-Vektorsuche und LLM-Streaming via LiteLLM. Der E2E-Test mit echten Services war erfolgreich.

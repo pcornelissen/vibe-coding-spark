@@ -1,12 +1,14 @@
 import asyncio
 import json
 import uuid
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException
 from sse_starlette.sse import EventSourceResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.database import get_session
 from app.models import Document, Project, SparkWorkflow, UploadStatus, WorkflowStatus
 from app.schemas import WorkflowResponse
@@ -30,11 +32,15 @@ async def start_processing(
         raise HTTPException(status_code=400, detail="No documents in project")
 
     spark = SparkClient()
-    spark_project_id = str(project_id)
+    spark_project_id = str(uuid.uuid4())
 
     file_ids = []
     for doc in documents:
-        file_id = await spark.upload_document(spark_project_id, doc.filename, b"placeholder")
+        file_path = Path(settings.upload_dir) / str(project_id) / str(doc.id)
+        if not file_path.exists():
+            raise HTTPException(status_code=400, detail=f"File content missing for {doc.filename}")
+        content = file_path.read_bytes()
+        file_id = await spark.upload_document(spark_project_id, doc.filename, content)
         file_ids.append(file_id)
         doc.upload_status = UploadStatus.UPLOADED
         doc.spark_document_id = file_id

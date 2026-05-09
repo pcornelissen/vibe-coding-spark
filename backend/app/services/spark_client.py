@@ -1,6 +1,8 @@
 import asyncio
 import json
 import shlex
+from pathlib import Path
+from uuid import uuid4
 
 import httpx
 
@@ -19,6 +21,13 @@ class SparkClient:
         self.temporal_ui_url = (temporal_ui_url or settings.spark_temporal_ui_url).rstrip("/")
 
     async def upload_document(self, project_id: str, filename: str, content: bytes) -> str:
+        suffix = Path(filename).suffix.lower()
+        if suffix not in {".pdf", ".docx"}:
+            pdf_filename = f"{Path(filename).stem}.pdf"
+            text = content.decode("utf-8", errors="replace")
+            content = text_to_pdf_bytes(filename, text)
+            filename = pdf_filename
+
         async with httpx.AsyncClient(timeout=httpx.Timeout(120, connect=10)) as client:
             payload = {"type": "document", "filename": filename, "projectId": project_id}
 
@@ -75,3 +84,60 @@ class SparkClient:
 
     def workflow_url(self, workflow_id: str) -> str:
         return f"{self.temporal_ui_url}/namespaces/default/workflows/{workflow_id}"
+
+
+def text_to_pdf_bytes(title: str, text: str) -> bytes:
+    lines = [title, "", *text.splitlines()]
+    wrapped_lines: list[str] = []
+    for line in lines:
+        if not line:
+            wrapped_lines.append("")
+            continue
+        for start in range(0, len(line), 86):
+            wrapped_lines.append(line[start : start + 86])
+
+    content_lines = ["BT", "/F1 10 Tf", "50 790 Td", "14 TL"]
+    for line in wrapped_lines[:52]:
+        content_lines.append(f"({_escape_pdf_text(line)}) Tj")
+        content_lines.append("T*")
+    content_lines.append("ET")
+    stream = "\n".join(content_lines).encode("latin-1", errors="replace")
+    objects = [
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        (
+            b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] "
+            b"/Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>"
+        ),
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+        b"<< /Length " + str(len(stream)).encode("ascii") + b" >>\nstream\n" + stream + b"\nendstream",
+    ]
+    pdf = bytearray(b"%PDF-1.4\n")
+    offsets = [0]
+    for index, obj in enumerate(objects, start=1):
+        offsets.append(len(pdf))
+        pdf.extend(f"{index} 0 obj\n".encode("ascii"))
+        pdf.extend(obj)
+        pdf.extend(b"\nendobj\n")
+    xref_offset = len(pdf)
+    pdf.extend(f"xref\n0 {len(objects) + 1}\n".encode("ascii"))
+    pdf.extend(b"0000000000 65535 f \n")
+    for offset in offsets[1:]:
+        pdf.extend(f"{offset:010d} 00000 n \n".encode("ascii"))
+    pdf.extend(
+        (
+            f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\n"
+            f"startxref\n{xref_offset}\n%%EOF\n"
+        ).encode("ascii")
+    )
+    return bytes(pdf)
+
+
+def _escape_pdf_text(value: str) -> str:
+    return (
+        value.encode("latin-1", errors="replace")
+        .decode("latin-1")
+        .replace("\\", "\\\\")
+        .replace("(", "\\(")
+        .replace(")", "\\)")
+    )

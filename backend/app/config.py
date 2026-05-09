@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     litellm_embedding_model: str = "BAAI/bge-m3"
     qdrant_url: str = "http://127.0.0.1:6333"
     qdrant_collection: str = "data_ollama"
+    upload_dir: str = "uploads"
 
     model_config = {"env_prefix": "SPARK_DOCS_"}
 

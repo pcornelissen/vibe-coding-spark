@@ -28,11 +28,32 @@ Vue 3 SPA (PrimeVue)  ←→  FastAPI Backend  ←→  SPARK (DMS + Temporal)
 
 - Python 3.13+ und [uv](https://docs.astral.sh/uv/)
 - Node.js 20+
-- Laufende SPARK-Instanz (Docker Compose) mit PostgreSQL, Qdrant, LiteLLM, Temporal
+- Podman oder Docker
 
 ## Setup
 
-### Backend
+### 1. SPARK-Infrastruktur starten
+
+```bash
+cd spark-workflow
+
+# Basis-Infrastruktur (PostgreSQL, Temporal, Qdrant, MinIO, Monitoring)
+podman compose up -d
+
+# SPARK-Services (DMS, LiteLLM, Extraction/Tika, Unoserver)
+podman compose -f docker-compose.yaml -f docker-compose.services.yaml up -d --build dms-upload litellm-proxy extraction tika unoserver
+```
+
+> **Hinweis:** `docling-serve` hat kein ARM64-Image. Stattdessen `EXTRACTION_PROVIDER=tika` in
+> `05-modulcluster/modul-inhaltsextraktion/.env.local` setzen (ist bereits umgestellt).
+
+### 2. Datenbank anlegen
+
+```bash
+podman exec spark-workflow-postgresql-1 psql -U postgres -c "CREATE DATABASE sparkdocs;"
+```
+
+### 3. Backend
 
 ```bash
 cd backend
@@ -41,7 +62,7 @@ uv run alembic upgrade head                       # DB-Migrationen ausführen
 uv run uvicorn app.main:app --reload --port 8000  # Dev-Server starten
 ```
 
-### Frontend
+### 4. Frontend
 
 ```bash
 cd frontend
@@ -49,13 +70,12 @@ npm install          # Dependencies installieren
 npm run dev          # Dev-Server starten (Port 5173)
 ```
 
-### Datenbank anlegen
+### 5. Testdaten laden (optional)
 
 ```bash
-docker exec spark-workflow-postgres-1 psql -U postgres -c "CREATE DATABASE sparkdocs;"
+cd backend
+uv run python seed_data/seed.py    # 3 Testprojekte mit Beispieldokumenten
 ```
-
-Danach im Backend `uv run alembic upgrade head` ausführen.
 
 ## Nutzung
 

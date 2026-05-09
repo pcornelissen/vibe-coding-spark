@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.database import get_session
 from app.models import Document, DocumentFormat, Project
 from app.schemas import DocumentResponse
@@ -36,6 +37,7 @@ async def upload_document(
         raise HTTPException(status_code=400, detail=f"Unsupported file format: {suffix}")
 
     content = await file.read()
+
     doc = Document(
         project_id=project_id,
         filename=file.filename or "unknown",
@@ -44,6 +46,11 @@ async def upload_document(
     session.add(doc)
     await session.commit()
     await session.refresh(doc)
+
+    upload_path = Path(settings.upload_dir) / str(project_id)
+    upload_path.mkdir(parents=True, exist_ok=True)
+    (upload_path / str(doc.id)).write_bytes(content)
+
     return doc
 
 
