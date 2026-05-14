@@ -51,4 +51,9 @@ async def get_project(project_id: uuid.UUID, session: AsyncSession = Depends(get
     project = (await session.execute(stmt)).scalar_one_or_none()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    return project
+    resp = ProjectDetailResponse.model_validate(project)
+    resp.document_count = len(project.documents)
+    if project.workflows:
+        latest = sorted(project.workflows, key=lambda w: w.started_at, reverse=True)[0]
+        resp.latest_workflow_status = latest.status
+    return resp

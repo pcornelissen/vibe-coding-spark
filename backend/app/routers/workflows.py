@@ -1,6 +1,7 @@
 import asyncio
 import json
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -72,18 +73,42 @@ async def workflow_status(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
+    spark = SparkClient()
+
     async def generate():
-        for _ in range(60):
+        for _ in range(120):
             stmt = (
                 select(SparkWorkflow)
                 .where(SparkWorkflow.project_id == project_id)
                 .order_by(SparkWorkflow.started_at.desc())
                 .limit(1)
             )
-            await session.expire_all()
+            session.expire_all()
             workflow = (await session.execute(stmt)).scalar_one_or_none()
 
             if workflow:
+                if workflow.status == WorkflowStatus.RUNNING:
+                    try:
+                        temporal_status = await spark.get_workflow_status(workflow.spark_workflow_id)
+                        if temporal_status == "completed":
+                            workflow.status = WorkflowStatus.COMPLETED
+                            workflow.completed_at = datetime.now(timezone.utc)
+                            docs_stmt = select(Document).where(Document.project_id == project_id)
+                            docs = (await session.execute(docs_stmt)).scalars().all()
+                            for doc in docs:
+                                doc.upload_status = UploadStatus.READY
+                            await session.commit()
+                        elif temporal_status == "failed":
+                            workflow.status = WorkflowStatus.FAILED
+                            workflow.completed_at = datetime.now(timezone.utc)
+                            docs_stmt = select(Document).where(Document.project_id == project_id)
+                            docs = (await session.execute(docs_stmt)).scalars().all()
+                            for doc in docs:
+                                doc.upload_status = UploadStatus.FAILED
+                            await session.commit()
+                    except Exception:
+                        pass
+
                 data = {
                     "workflow_id": workflow.spark_workflow_id,
                     "status": workflow.status.value,

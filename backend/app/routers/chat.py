@@ -37,9 +37,9 @@ async def chat(
     try:
         embeddings = await llm.get_embeddings([question])
         query_vector = embeddings[0]
-    except Exception:
+    except Exception as e:
         async def error_stream():
-            yield {"event": "token", "data": "Fehler: Konnte keine Embeddings erzeugen. Ist LiteLLM erreichbar?"}
+            yield {"event": "token", "data": f"Fehler: Konnte keine Embeddings erzeugen. Ist LiteLLM erreichbar? ({e})"}
             yield {"event": "done", "data": ""}
         return EventSourceResponse(error_stream())
 

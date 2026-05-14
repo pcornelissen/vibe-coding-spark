@@ -5,7 +5,7 @@ import Column from "primevue/column";
 import DataTable from "primevue/datatable";
 import FileUpload from "primevue/fileupload";
 import Tag from "primevue/tag";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { api } from "@/api";
 import { useProjectsStore } from "@/stores/projects";
@@ -16,8 +16,36 @@ const store = useProjectsStore();
 const projectId = route.params.id as string;
 const uploading = ref(false);
 const processing = ref(false);
+let statusSource: EventSource | null = null;
 
-onMounted(() => store.fetchProject(projectId));
+function startStatusPolling() {
+  stopStatusPolling();
+  statusSource = api.workflowStatus(projectId);
+  statusSource.addEventListener("status", () => {
+    store.fetchProject(projectId);
+  });
+  statusSource.addEventListener("done", () => {
+    store.fetchProject(projectId);
+    stopStatusPolling();
+  });
+  statusSource.onerror = () => stopStatusPolling();
+}
+
+function stopStatusPolling() {
+  if (statusSource) {
+    statusSource.close();
+    statusSource = null;
+  }
+}
+
+onMounted(async () => {
+  await store.fetchProject(projectId);
+  if (store.currentProject?.latest_workflow_status === "running") {
+    startStatusPolling();
+  }
+});
+
+onUnmounted(() => stopStatusPolling());
 
 const project = computed(() => store.currentProject);
 
@@ -44,6 +72,7 @@ async function startProcessing() {
   try {
     await api.startProcessing(projectId);
     await store.fetchProject(projectId);
+    startStatusPolling();
   } finally {
     processing.value = false;
   }

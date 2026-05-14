@@ -74,6 +74,27 @@ class SparkClient:
             raise RuntimeError(stderr.decode().strip() or stdout.decode().strip())
         return workflow_id
 
+    async def get_workflow_status(self, workflow_id: str) -> str:
+        args = [
+            *shlex.split(self.temporal_cli),
+            "workflow", "describe",
+            "--address", "temporal:7233",
+            "--namespace", "default",
+            "--workflow-id", workflow_id,
+        ]
+        proc = await asyncio.create_subprocess_exec(
+            *args,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=15)
+        output = stdout.decode()
+        if "Completed" in output:
+            return "completed"
+        if "Failed" in output or "Terminated" in output or "TimedOut" in output:
+            return "failed"
+        return "running"
+
     async def check_health(self) -> bool:
         try:
             async with httpx.AsyncClient(timeout=5) as client:

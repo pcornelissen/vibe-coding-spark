@@ -51,7 +51,7 @@ class LLMClient:
             "Content-Type": "application/json",
         }
         payload = {"model": settings.litellm_embedding_model, "input": texts}
-        async with httpx.AsyncClient(timeout=30) as client:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(120, connect=10)) as client:
             resp = await client.post(f"{self.url}/v1/embeddings", json=payload, headers=headers)
             resp.raise_for_status()
             data = resp.json()
